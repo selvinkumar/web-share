@@ -24,6 +24,12 @@
           company: "Google Inc.",
           companyURL: "https://google.com",
           w3cid: 91260
+        },
+        {
+          name: "Eric Willigers",
+          company: "Google Inc.",
+          companyURL: "https://google.com",
+          w3cid: 67534
         }],
         caniuse: {
           feature: "web-share",
@@ -33,7 +39,7 @@
       };
     </script>
   </head>
-  <body>
+  <body data-cite="FILEAPI">
     <section id="abstract">
       <p>
         This specification defines an API for sharing text, links and other
@@ -143,13 +149,21 @@
             rejected with</a> {{InvalidStateError}}.
             </li>
             <li>If none of |data|'s members {{ShareData/title}},
-            {{ShareData/text}}, or {{ShareData/url}} are present, return <a>a
-            promise rejected with</a> a {{TypeError}}.
+            {{ShareData/text}}, or {{ShareData/url}} or {{ShareData/file}} are
+            present, return <a>a promise rejected with</a> a {{TypeError}}.
             </li>
-            <li>If |data|'s {{ShareData/url}} member is [=dictionary
-            member/present=]:
+            <li>If |data|'s {{ShareData/files}} member is present:
               <ol>
-                <li>Let |base:URL| be the <b>this</b> value's <a>relevant
+                <li>If |data|'s {{ShareData/files}} member is empty, or if the
+                implementation does not support file sharing, return <a>a
+                promise rejected with</a> a {{TypeError}}, and abort these
+                steps.
+                </li>
+              </ol>
+            </li>
+            <li>If |data|'s {{ShareData/url}} member is present:
+              <ol>
+                <li>Let |base:URL| be the [=this=] value's <a>relevant
                 settings object</a>'s [=environment settings object/api base
                 URL=].
                 </li>
@@ -164,6 +178,11 @@
                 on |url|.
                 </li>
               </ol>
+            </li>
+            <li>If the [=relevant global object=] of [=this=] does not have
+            [=transient activation=], or a file type is being blocked due to
+            security considerations, return <a>a promise rejected with</a> 
+            with a {{"NotAllowedError"}} {{DOMException}}.
             </li>
             <li>Set {{[[sharePromise]]}} to be <a>a new promise</a>.
             </li>
@@ -243,6 +262,7 @@
         </h3>
         <pre class="idl">
           dictionary ShareData {
+            FrozenArray&lt;File&gt; files;
             USVString title;
             USVString text;
             USVString url;
@@ -253,6 +273,12 @@
           members:
         </p>
         <dl data-sort="">
+          <dt>
+            <dfn>files</dfn> member
+          </dt>
+          <dd>
+            Files to be shared.
+          </dd>
           <dt>
             <dfn>title</dfn> member
           </dt>
@@ -361,6 +387,16 @@
           talk directly to native applications.
         </p>
       </section>
+    </section>
+    <section class="informative">
+      <h2>
+        Accessibility considerations
+      </h2>
+      <p>
+        When this specification is used to present information in the user
+        interface, implementors will want to follow the OS level accessibility
+        guidelines for the platform.
+      </p>
     </section>
     <section class="informative">
       <h2>
